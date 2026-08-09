@@ -63,6 +63,14 @@ function formatMinutes(min) {
   return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
 }
 
+function formatDurationShort(totalMin) {
+  totalMin = Math.max(0, Math.round(totalMin));
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
 function dateKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -185,7 +193,7 @@ function renderStatusLine(blocks, nowMin) {
     .sort((a, b) => a.startMin - b.startMin)[0];
   if (upcoming) {
     const diff = upcoming.startMin - nowMin;
-    nextEl.textContent = `NEXT: ${upcoming.label} in ${Math.max(0, Math.round(diff))}m`;
+    nextEl.textContent = `NEXT: ${upcoming.label} in ${formatDurationShort(diff)}`;
   } else {
     nextEl.textContent = "NEXT: —";
   }
@@ -367,7 +375,7 @@ function renderEditList() {
       row.innerHTML = `
         <span class="block-cat-dot" style="background:${CATEGORY_COLORS[b.category]}"></span>
         <span class="edit-label">${b.label} <span class="dim">(${b.days.length === 7 ? "daily" : b.days.map((d) => DAY_NAMES[d]).join(",")})</span></span>
-        <span class="edit-time">${b.start}–${b.end}</span>
+        <span class="edit-time">${formatMinutes(toMinutes(b.start))}–${formatMinutes(toMinutes(b.end))}</span>
       `;
       const delBtn = document.createElement("button");
       delBtn.textContent = "✕";
@@ -483,6 +491,41 @@ document.getElementById("modalBackdrop").addEventListener("click", (e) => {
 });
 document.getElementById("addBlockForm").addEventListener("submit", handleAddBlock);
 document.getElementById("enableRemindersBtn").addEventListener("click", enableReminders);
+document.getElementById("exportBtn").addEventListener("click", exportData);
+document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change", importData);
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `routine-backup-${dateKey(new Date())}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  document.getElementById("dataStatus").textContent = "Exported.";
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result);
+      if (!parsed.blocks || !parsed.logs) throw new Error("Invalid file");
+      if (!confirm("This replaces all current data on this device with the imported file. Continue?")) return;
+      data = parsed;
+      saveData();
+      renderAll();
+      document.getElementById("dataStatus").textContent = "Imported.";
+    } catch (err) {
+      document.getElementById("dataStatus").textContent = "Import failed — not a valid export file.";
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
 
 renderAll();
 setInterval(renderAll, 30000);

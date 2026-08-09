@@ -207,12 +207,12 @@ html, body {
 .check-btns { display: flex; gap: 6px; flex-shrink: 0; }
 .check-btn {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text-dim);
-  padding: 4px 8px;
-  border-radius: 5px;
+  padding: 6px 10px;
+  border-radius: 6px;
   cursor: pointer;
 }
 .check-btn:hover { border-color: var(--text-dim); color: var(--text); }
@@ -242,10 +242,10 @@ html, body {
 /* ---------- Buttons ---------- */
 .btn-primary, .btn-ghost {
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 7px;
   cursor: pointer;
   border: 1px solid transparent;
 }
@@ -287,8 +287,8 @@ html, body {
   font-size: 12px;
 }
 .edit-row .edit-label { flex: 1; }
-.edit-row .edit-time { font-family: var(--mono); color: var(--text-dim); width: 100px; flex-shrink: 0; }
-.edit-row button { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 14px; }
+.edit-row .edit-time { font-family: var(--mono); color: var(--text-dim); width: 132px; flex-shrink: 0; text-align: right; }
+.edit-row button { background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 18px; padding: 4px 6px; }
 .edit-row button:hover { color: var(--red); }
 
 .form-grid { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -307,9 +307,9 @@ input[type=text], input[type=time], select {
 .day-chips { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
 .day-chip {
   font-family: var(--mono);
-  font-size: 10px;
-  padding: 5px 7px;
-  border-radius: 5px;
+  font-size: 11px;
+  padding: 7px 9px;
+  border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text-dim);
@@ -318,6 +318,32 @@ input[type=text], input[type=time], select {
 .day-chip.active { background: var(--teal); border-color: var(--teal); color: #0b1512; }
 
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 560px) {
+  .app { padding: 16px 12px 70px; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .brand { font-size: 18px; }
+  .panel { padding: 14px 14px; }
+
+  .block-row { flex-wrap: wrap; row-gap: 8px; }
+  .block-time { width: auto; order: 1; }
+  .block-cat-dot { order: 1; }
+  .block-label { order: 1; flex-basis: 100%; }
+  .block-status { order: 2; }
+  .check-btns { order: 3; width: 100%; justify-content: flex-end; }
+
+  .edit-row { flex-wrap: wrap; row-gap: 4px; }
+  .edit-row .edit-label { flex-basis: 100%; order: 1; }
+  .edit-row .edit-time { order: 2; text-align: left; }
+  .edit-row .block-cat-dot { order: 0; }
+  .edit-row button { order: 3; margin-left: auto; }
+
+  .timeline { height: 40px; }
+  .hm-cell { width: 11px; height: 11px; }
+
+  .modal { padding: 16px; }
+}
 </style>
 </head>
 <body>
@@ -362,6 +388,15 @@ input[type=text], input[type=time], select {
     <span class="dim" id="reminderStatus" style="margin-left:10px;"></span>
   </section>
 
+  <section class="panel">
+    <div class="panel-head"><h2>Data</h2></div>
+    <p class="dim" style="margin:0 0 10px;">This app stores everything only on this device. To use it on another device (e.g. phone + PC), export here and import there.</p>
+    <button class="btn-ghost" id="exportBtn">Export data</button>
+    <button class="btn-ghost" id="importBtn" style="margin-left:8px;">Import data</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none;" />
+    <span class="dim" id="dataStatus" style="margin-left:10px;"></span>
+  </section>
+
 </div>
 
 <div class="modal-backdrop" id="modalBackdrop">
@@ -399,6 +434,7 @@ input[type=text], input[type=time], select {
           <input type="time" id="newEnd" required />
         </div>
       </div>
+      <p class="dim" style="margin:4px 0 0;font-size:11px;">These pickers follow your device's own time format setting — but everywhere else in the app always shows 12-hour time.</p>
       <label class="small" style="margin-top:10px;">Days</label>
       <div class="day-chips" id="newDayChips"></div>
       <div class="modal-footer">
